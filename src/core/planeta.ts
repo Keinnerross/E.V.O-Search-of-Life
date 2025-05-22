@@ -1,4 +1,4 @@
-import { Tile } from './tile';
+import { Tile, getColorForTipo } from './tile';
 import type { TipoTile } from './tile';
 import type { Estacion } from './estaciones';
 import { getEstacion, getTempBaseEstacion } from './estaciones';
@@ -17,7 +17,6 @@ export class Planeta {
   temperatura = 15;
   estacion: Estacion = 'primavera';
   horaDelDia = 0;
-  humedad = 50;
   nubes = 0;
 
   tiles: Tile[][];
@@ -29,39 +28,28 @@ export class Planeta {
     this.mapHeight = mapHeight;
     this.tiles = [];
 
-    // Parche para el shape de UN solo continente central
+
+
     for (let y = 0; y < mapHeight; y++) {
       this.tiles[y] = [];
       for (let x = 0; x < mapWidth; x++) {
         const cx = x - mapWidth / 2;
         const cy = y - mapHeight / 2;
-
-        // Normalizamos distancia al centro (para shape circular)
         const distNorm = Math.sqrt(cx * cx + cy * cy) / (Math.max(mapWidth, mapHeight) / 2);
-
-        // Simplex noise, hazlo más “redondeado” usando Math.pow para dar centro dominante
-        let noise = noise2D(x / 48, y / 48); // Filtro más suave, baja la frecuencia
+        let noise = noise2D(x / 48, y / 48);
         noise = mapValue(noise, -1, 1, 0, 1);
-
-        // Influencia brutal del centro: 
-        // Sube el exponente para aplanar (tipo “isla continente”)
         let continentalidad = Math.pow(1 - distNorm, 1.7) * noise;
 
-        // Ahora define los umbrales
         let tipo: TipoTile = 'profundo';
-        if (continentalidad > 0.19) tipo = 'mediano';      // lago
-        if (continentalidad > 0.23) tipo = 'bajo';         // tierra baja
-        if (continentalidad > 0.27) tipo = 'playa';        // playa
-        if (continentalidad > 0.25) tipo = 'roca';         // montaña baja
-        if (continentalidad > 0.40) tipo = 'colinas';      // colinas
+        if (continentalidad > 0.16) tipo = 'mediano';
+        if (continentalidad > 0.21) tipo = 'bajo';
+        if (continentalidad > 0.25) tipo = 'roca';
+        if (continentalidad > 0.40) tipo = 'colinas';
+        if (continentalidad > 0.55) tipo = 'montañas';
 
-        if (continentalidad > 0.55) tipo = 'montañas';     // montaña alta
-
-        // Opcional: bordes duros de mar
         const borde = 6;
         if (
-          x < borde ||
-          y < borde ||
+          x < borde || y < borde ||
           x > mapWidth - borde - 1 ||
           y > mapHeight - borde - 1
         ) {
@@ -73,7 +61,31 @@ export class Planeta {
     }
 
 
+
+
+
   }
+
+
+
+
+
+  private actualizarCostasSecas() {
+    for (let y = 1; y < this.mapHeight - 1; y++) {
+      for (let x = 1; x < this.mapWidth - 1; x++) {
+        const tile = this.tiles[y][x];
+
+        if (tile.tipo === 'bajo' || tile.tipo === 'costaSeca') {
+          if (this.nubes <= 9) {
+            tile.setTipo('costaSeca');
+          } else {
+            tile.setTipo('bajo');
+          }
+        }
+      }
+    }
+  }
+
 
   avanzarTiempo() {
     this.tiempo++;
@@ -88,10 +100,27 @@ export class Planeta {
     const cambio = (temperaturaObjetivo - this.temperatura) * 0.2;
     this.temperatura += cambio;
 
+    const rangosNube: Record<Estacion, { min: number; max: number }> = {
+      invierno: { min: 60, max: 80 },
+      otoño: { min: 30, max: 40 },
+      primavera: { min: 10, max: 25 },
+      verano: { min: 0, max: 5 },
+    };
+
+    const { min, max } = rangosNube[this.estacion];
+
+    if (this.nubes < min) {
+      this.nubes += Math.random() * 1.5;
+    } else if (this.nubes > max) {
+      this.nubes -= Math.random() * 1.5;
+    } else {
+      this.nubes += (Math.random() - 0.5) * 2;
+    }
+
+    this.nubes = Math.max(0, Math.min(100, this.nubes));
+
     this.nubes = simularAguaEnTiles(this.tiles, this.temperatura, this.nubes);
 
-    this.humedad += Math.sin(this.tiempo / 100) * 2;
+    this.actualizarCostasSecas();
   }
-
-
 }

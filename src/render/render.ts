@@ -2,6 +2,17 @@ import { Application, Container, Sprite, Graphics } from 'pixi.js';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../config';
 import { Tile } from '../core/tile'; // Ajusta el path según tu proyecto
 
+
+
+
+
+
+
+
+
+
+
+
 export let app: Application;
 export const planeta = new Container();
 export const luz = new Sprite();

@@ -19,7 +19,6 @@ export function crearUI(): void {
     <div>🌡️ Temperatura: <span id="ui-temp">0</span> °C</div>
     <div>🌡️ Estacion: <span id="ui-estacion"></span></div>
     <div>🌡️ Hora: <span id="ui-horaDelDia"></span></div>
-    <div>🌡️ humedad: <span id="ui-humedad"></span></div>
 
     <div>🌡️ nubes: <span id="ui-nubes"></span></div>
 
@@ -44,7 +43,6 @@ export function actualizarUI(planeta: Planeta): void {
   (document.getElementById('ui-horaDelDia') as HTMLElement).textContent = planeta.horaDelDia.toString().padStart(2, '0') + ":00";
   // (document.getElementById('ui-aguaLíquida') as HTMLElement).textContent = planeta.aguaLíquida.toFixed(1);
   (document.getElementById('ui-nubes') as HTMLElement).textContent = planeta.nubes.toFixed(1);
-  (document.getElementById('ui-humedad') as HTMLElement).textContent = planeta.humedad.toFixed(1);
 
 
 

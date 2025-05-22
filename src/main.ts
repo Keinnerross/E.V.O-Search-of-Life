@@ -18,6 +18,11 @@ import { crearUI, actualizarUI } from './ui/ui';
 import { actualizarLuz } from './render/luz';
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../config';
 import { tilemap } from './render/render';
+import {
+  poblarNubesVisuales,
+  actualizarNubesVisuales,
+  sincronizarNubesVisuales,
+} from './render/nubes';
 
 
 
@@ -35,7 +40,10 @@ const mundo = new Planeta(MAP_WIDTH, MAP_HEIGHT);
 const compuestos: Graphics[] = [];
 
 await initApp();
+
 tilemap.actualizarDesdePlaneta(mundo.tiles);
+
+poblarNubesVisuales(app, 0);
 
 crearUI();
 
@@ -66,14 +74,18 @@ app.ticker.add(() => {
 
   if (frameCounter >= ticksPorDia) {
     mundo.avanzarTiempo();
+
+    sincronizarNubesVisuales(app, mundo.nubes);
+
     tilemap.actualizarDesdePlaneta(mundo.tiles);
 
     actualizarUI(mundo);
     frameCounter = 0;
   }
 
-  actualizarLuz(mundo.horaDelDia);
+  actualizarLuz(mundo.horaDelDia, mundo.estacion);
 
+  actualizarNubesVisuales(app);
 
   for (const p of compuestos as PuntoConVel[]) {
     p.x += p.vel.x;

@@ -15,7 +15,7 @@ export function simularAguaEnTiles(
   tiles: Tile[][],
   temperatura: number,
   nubes: number
-): number {
+): number { 
   let nuevasNubes = nubes;
 
   for (let y = 0; y < tiles.length; y++) {
